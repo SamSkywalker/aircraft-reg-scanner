@@ -1,2 +1,41 @@
 # aircraft-reg-scanner
+
 A local offline pipeline to identify aircraft type from images via OCR and OpenSky database.
+
+## Brief Intro
+
+Warning:  There mighy be bugs so use at your own risks.
+
+Using database from Opensky: [OpenSky](https://opensky-network.org/data/aircraft) and [Opensky Data Samples](https://opensky-network.org/datasets/#metadata/).
+
+This project is mainly for Chinese user as all output contains Chinese.
+
+Developed with Gemini AI
+
+Now working on:
+
+1. More accurate OCR(text filter)
+2. Implement YOLO for OCR
+3. Manual correction module for database
+
+## 简要介绍
+
+注意：开发初期代码功能不完整，可能有bug，使用者后果自负
+
+一个通过 OCR 和 OpenSky 数据库从图像中识别注册号和机型的本地离线系统
+
+使用OpenSky数据库：[OpenSky](https://opensky-network.org/data/aircraft) 和 [Opensky Data Samples](https://opensky-network.org/datasets/#metadata/)
+
+与Gemini AI一同开发
+
+现正开发：
+
+1. 更准确的OCR识别过滤系统
+2. 使用YOLO对精确区域进行识别以提升准确率
+3. 人工介入数据库纠正
+
+## Update Log
+
+UPD @ 2026/6/15:Ver 0.0 基本架构
+
+UPD @ 2026/6/15:Ver 0.1 现已可以识别简单工况; 现已可以对航司数据进行OCR识别并在与数据库不同时弹出警告
