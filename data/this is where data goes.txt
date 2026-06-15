@@ -1,0 +1,4 @@
+put data csv from OpenSky here
+data\aircraft-database-complete-2025-08.csv
+and run db-bulider to build database, database should be here
+data\aviation_core_2025_08.db
