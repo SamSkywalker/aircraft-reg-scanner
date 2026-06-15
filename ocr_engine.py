@@ -1,12 +1,21 @@
 import easyocr
 import re
+import torch
 
 class LocalOCREngine:
     def __init__(self):
         print("正在初始化本地 OCR 引擎...")
         # 初始化 EasyOCR，指定只识别英文('en')
         # 如果电脑有 NVIDIA 显卡且配置了 CUDA，可以设置 gpu=True，否则 gpu=False
-        self.reader = easyocr.Reader(['en'], gpu=False)
+        use_gpu = torch.cuda.is_available()
+        
+        if use_gpu:
+            print(f"检测到可用 GPU: {torch.cuda.get_device_name(0)}，已自动开启 CUDA 加速。")
+        else:
+            print("未检测到 NVIDIA 显卡或未配置 CUDA 环境，系统将自动使用 CPU 进行计算。")
+            
+        # 将自适应的结果传入 gpu 参数
+        self.reader = easyocr.Reader(['en'], gpu=use_gpu)
         print("本地 OCR 引擎初始化完毕。")
 
     def detect_and_recognize(self, image_path):
