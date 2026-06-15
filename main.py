@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 from ocr_engine import LocalOCREngine
 from text_filter import RegistrationFilter
+import glob
 
 DB_PATH = './data/aviation_core_2025_08.db'
 FAILED_DIR = './images/failed_cases'
@@ -86,6 +87,7 @@ def pipeline(image_path):
     db_operator = str(aircraft_info["运营单位"]).upper()
     
     print("\n================识别成功================")
+    print(f"图片路径: {image_path}")
     print(f"注册号: {aircraft_info['注册号']}")
     print(f"制造商: {aircraft_info['制造商']}")
     print(f"详细机型: {aircraft_info['详细机型']}")
@@ -111,5 +113,15 @@ def pipeline(image_path):
     print("==================================================")
 
 if __name__ == '__main__':
-    target_image = "./images/test.jpg" 
-    pipeline(target_image)
+    image_folder = "./images/"
+    # 获取文件夹中所有常见的图片格式
+    image_extensions = ['*.jpg', '*.jpeg', '*.png', '*.bmp', '*.tiff']
+    image_files = []
+    
+    for ext in image_extensions:
+        image_files.extend(glob.glob(os.path.join(image_folder, ext)))
+    
+    # 对每个图片执行 pipeline
+    for image_path in image_files:
+        print(f"Processing: {image_path}")
+        pipeline(image_path)
