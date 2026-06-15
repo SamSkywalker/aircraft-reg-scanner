@@ -221,7 +221,7 @@ __marimo__/
 
 # 排除本地大体积航空数据集
 data/aircraft-database-complete-2025-08.csv
-data/aviation_core_2025_08.db
+# data/aviation_core_2025_08.db
 
 # 排除失败案例图片
 images/failed_cases/*
