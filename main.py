@@ -58,7 +58,7 @@ def pipeline(image_path):
         return
 
     print("==================================================")
-    print("🛫 启动带航司交叉比对的识别流水线...")
+    print("启动带航司交叉比对的识别流水线...")
     print("==================================================")
 
     # 1. OCR 扫描
@@ -85,7 +85,7 @@ def pipeline(image_path):
     db_owner = str(aircraft_info["所有人"]).upper()
     db_operator = str(aircraft_info["运营单位"]).upper()
     
-    print("\n================ 🎉 识别成功 ================")
+    print("\n================识别成功================")
     print(f"注册号: {aircraft_info['注册号']}")
     print(f"制造商: {aircraft_info['制造商']}")
     print(f"详细机型: {aircraft_info['详细机型']}")
