@@ -220,5 +220,5 @@ __marimo__/
 
 
 # 排除本地大体积航空数据集
-data/aircraftDatabase.csv
-data/aviation_core.db
+data/aircraft-database-complete-2025-08.csv
+data/aviation_core_2025_08.db
