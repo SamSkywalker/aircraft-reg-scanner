@@ -16,7 +16,12 @@ def generate_variant_regs(raw_text):
     """
     confusion_map = {
         'B': '8', '8': 'B', 
-        'O': '0', '0': 'O'
+        'O': '0', '0': 'O',
+        'I': '1', '1': 'I',
+        'S': '5', '5': 'S',
+        'Z': '2', '2': 'Z',
+        'T': '1', '1': 'T',
+        'A': '4', '4': 'A'
     }
     variants = {raw_text}
     for i, char in enumerate(raw_text):
@@ -78,12 +83,12 @@ def verify_and_query_database(raw_reg_text):
         if len(prefix_matches) > 1:
             for match in prefix_matches:
                 curr_country = str(match[2]).upper()
-                # 如果当前候选者纯字符长度为 6（带横杠 7 位，如 B-62555），且规则名称里包含 Taiwan
-                if pure_len == 6 and "TAIWAN" in curr_country:
+                # 如果当前候选者纯字符长度为 5（带横杠 6 位，如 B-6255 ），且规则名称指代中国大陆
+                if pure_len == 5 and "TAIWAN" not in curr_country:
                     chosen_match = match
                     break
-                # 如果当前候选者纯字符长度为 5（带横杠 6 位，如 B-6255 ），且规则名称指代中国大陆
-                elif pure_len == 5 and "TAIWAN" not in curr_country:
+                # 如果当前候选者纯字符长度为 6（带横杠 7 位，如 B-62555），且规则名称里包含 Taiwan
+                elif pure_len == 6 and "TAIWAN" in curr_country:
                     chosen_match = match
                     break
             
