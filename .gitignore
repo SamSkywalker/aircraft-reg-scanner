@@ -226,3 +226,6 @@ data/aviation_core_2025_08.db
 # 排除失败案例图片
 images/failed_cases/*
 images/*
+
+# 排除临时文件
+reserved*
