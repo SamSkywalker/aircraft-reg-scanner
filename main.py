@@ -35,7 +35,7 @@ def generate_variant_regs(raw_text):
 
 def verify_and_query_database(raw_reg_text):
     """
-    联动最新的 prefixes 表与 aircraft 表，利用数据驱动加长度指纹自动区分大陆/台湾地区规则并检索档案
+    联动最新的 prefixes 表与 aircraft 表，利用修复后的最终形态与长度指纹精准识别国籍与档案
     """
     if not os.path.exists(DB_PATH):
         print(f"错误: 找不到本地数据库文件 {DB_PATH}")
@@ -53,19 +53,44 @@ def verify_and_query_database(raw_reg_text):
     valid_hit_records = []
     
     for candidate in candidates:
-        # 3. 提取纯字母数字，用来分析长度和前缀
-        pure_text = candidate.replace("-", "").replace("/", "").replace("\\", "")
-        pure_len = len(pure_text) # 获取纯字符长度（如 B6255 长度为 5，B62555 长度为 6）
+        # 3. 先行执行数据驱动的斜杠/横杠智能修复，拿到最终的注册号形态
+        # 这一步先假定大方向去修复符号，以便拿到准确的字符串指纹
+        if '-' in candidate:
+            final_reg = candidate.replace("/", "1").replace("\\", "1")
+        else:
+            # 盲切前缀来判断是否要补横杠
+            pure_letters = candidate.replace("/", "").replace("\\", "")
+            # 临时探测一下大前缀是否需要横杠
+            cursor.execute("SELECT has_dash FROM prefixes WHERE clean_prefix = ? LIMIT 1", (pure_letters[:1],))
+            test_match = cursor.fetchone()
+            has_dash_guess = test_match[0] if test_match else 0
+            
+            if has_dash_guess == 1:
+                first_slash_idx = -1
+                for idx, char in enumerate(candidate):
+                    if char in ['/', '\\']:
+                        first_slash_idx = idx
+                        break
+                if first_slash_idx != -1:
+                    before_slash = candidate[:first_slash_idx]
+                    after_slash = candidate[first_slash_idx+1:]
+                    processed_after = after_slash.replace('/', '1').replace('\\', '1')
+                    final_reg = f"{before_slash}-{processed_after}"
+                else:
+                    final_reg = f"{candidate[:1]}-{candidate[1:]}"
+            else:
+                final_reg = candidate.replace("/", "1").replace("\\", "1")
+
+        final_reg = re.sub(r'-+', '-', final_reg)
+
+        # 4. 基于最终形态 [final_reg] 计算绝对精确的长度指纹
+        final_pure_text = final_reg.replace("-", "")
+        final_pure_len = len(final_pure_text)
         
         prefix_matches = []
-        db_clean_prefix = None
-        has_dash = None
-        country_name = None
-        
         # 逐级提取前缀去数据库中检索
         for length in [3, 2, 1]:
-            possible_clean_prefix = pure_text[:length]
-            # 注意：这里改为获取所有匹配的记录（因为大前缀 B 旗下会有多条细分规则）
+            possible_clean_prefix = final_pure_text[:length]
             cursor.execute(
                 "SELECT clean_prefix, has_dash, [Country Name] FROM prefixes WHERE clean_prefix = ?", 
                 (possible_clean_prefix,)
@@ -75,55 +100,29 @@ def verify_and_query_database(raw_reg_text):
                 break
                 
         if not prefix_matches:
-            continue # 连全球国籍纯字母前缀都对不上，直接淘汰
+            continue # 前缀不合法，淘汰
             
-        # === 核心多规则长度分流决策层 ===
-        # 如果该前缀对应多条规则（比如都属于 B ），我们根据长度指纹筛选最合适的那条
+        # === 核心多规则长度分流决策层（基于修复后的精准长度） ===
         chosen_match = None
         if len(prefix_matches) > 1:
             for match in prefix_matches:
                 curr_country = str(match[2]).upper()
-                # 如果当前候选者纯字符长度为 5（带横杠 6 位，如 B-6255 ），且规则名称指代中国大陆
-                if pure_len == 5 and "TAIWAN" not in curr_country:
+                # 大陆编排：去杠后总长 5 位（包含 B-XXXX 和新版 B-XXXA 混合编排）
+                if final_pure_len == 5 and "TAIWAN" not in curr_country:
                     chosen_match = match
                     break
-                # 如果当前候选者纯字符长度为 6（带横杠 7 位，如 B-62555），且规则名称里包含 Taiwan
-                elif pure_len == 6 and "TAIWAN" in curr_country:
+                # 台湾地区编排：去杠后总长 6 位（B-XXXXX 格式）
+                elif final_pure_len == 6 and "TAIWAN" in curr_country:
                     chosen_match = match
                     break
             
-            # 如果根据长度没能特异性挑出（比如新版混合尾号），则默认采用第一条
             if not chosen_match:
                 chosen_match = prefix_matches[0]
         else:
             chosen_match = prefix_matches[0]
             
         db_clean_prefix, has_dash, country_name = chosen_match
-        # =================================
-
-        # 4. 数据驱动的斜杠/横杠智能修正
-        if '-' in candidate:
-            final_reg = candidate.replace("/", "1").replace("\\", "1")
-        else:
-            if has_dash == 1:
-                first_slash_idx = -1
-                for idx, char in enumerate(candidate):
-                    if char in ['/', '\\']:
-                        first_slash_idx = idx
-                        break
-                
-                if first_slash_idx != -1:
-                    before_slash = candidate[:first_slash_idx]
-                    after_slash = candidate[first_slash_idx+1:]
-                    processed_after = after_slash.replace('/', '1').replace('\\', '1')
-                    final_reg = f"{before_slash}-{processed_after}"
-                else:
-                    prefix_len = len(db_clean_prefix)
-                    final_reg = f"{candidate[:prefix_len]}-{candidate[prefix_len:]}"
-            else:
-                final_reg = candidate.replace("/", "1").replace("\\", "1")
-
-        final_reg = re.sub(r'-+', '-', final_reg)
+        # =======================================================
 
         # 5. 横杠合规性二次校验
         if has_dash == 1 and '-' not in final_reg:
