@@ -22,15 +22,21 @@ class RegistrationFilter:
             if not cleaned_text:
                 continue
 
-            # 1. 提取航司视觉线索（航司 Logo 通常很大，不干扰它同时作为注册号候选的潜力）
+            # 1. 提取航司视觉线索
             if self.airline_keywords.match(cleaned_text):
                 if prob > max_airline_prob:
                     max_airline_prob = prob
                     visual_airline_hint = cleaned_text
 
-            # 2. 只要符合基础注册号形态，统统收纳进候选列表
-            if self.loosely_pattern.match(cleaned_text):
-                reg_candidates.append(cleaned_text)
+            # ================= 新增：首尾噪声修剪 =================
+            # 剥离首尾非字母数字的字符（例如：RA-86559_ 变成 RA-86559）
+            # [^A-Z0-9]+$ 匹配结尾的所有非字母数字，^[\\W_]+ 匹配开头的所有非字母数字
+            stripped_text = re.sub(r'^[^A-Z0-9]+|[^A-Z0-9]+$', '', cleaned_text)
+            # ===================================================
+
+            # 2. 只要符合基础注册号形态，统统收纳进候选列表（此处改用修剪后的文本进行匹配）
+            if self.loosely_pattern.match(stripped_text):
+                reg_candidates.append(stripped_text)
 
         # 去重处理，保持顺序
         reg_candidates = list(dict.fromkeys(reg_candidates))
@@ -43,11 +49,13 @@ class RegistrationFilter:
         return reg_candidates, visual_airline_hint
 
 if __name__ == '__main__':
+    # 测试修剪效果
     mock_ocr_results = [
         ([[0,0],[1,1]], "AIR CHINA", 0.95),
-        ([[0,0],[1,1]], "B-28/3", 0.72),
-        ([[0,0],[1,1]], "JA81AM", 0.85),
-        ([[0,0],[1,1]], "GATE", 0.90),
+        ([[0,0],[1,1]], "RA-86559_", 1.00),     # 带后缀下划线
+        ([[0,0],[1,1]], "WII-62M", 0.32),        # 乱码
+        ([[0,0],[1,1]], "bilibili KAIRZ Sunrise", 0.25),
+        ([[0,0],[1,1]], "-B-2813", 0.85),       # 带前缀横杠干扰
     ]
     
     filter_tool = RegistrationFilter()
