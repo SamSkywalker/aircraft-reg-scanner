@@ -1,6 +1,8 @@
 import easyocr
 import re
 import torch
+import cv2
+import numpy as np
 
 class LocalOCREngine:
     def __init__(self):
@@ -25,8 +27,14 @@ class LocalOCREngine:
         print(f"正在对图像进行全图扫描: {image_path}")
         try:
             # readtext 会返回一个列表，每个元素格式为: ([坐标], "文本", 置信度)
-            raw_results = self.reader.readtext(image_path)
+            files_bt = np.fromfile(image_path, np.uint8)
+            img_mat = cv2.imdecode(files_bt, cv2.IMREAD_COLOR)
+            if img_mat is None:
+                raise ValueError("无法读取图像文件")
+            
+            raw_results = self.reader.readtext(img_mat)
             return raw_results
+        
         except Exception as e:
             print(f"OCR 扫描过程中发生错误: {e}")
             return []
@@ -59,7 +67,7 @@ class LocalOCREngine:
 # 测试本模块功能
 if __name__ == '__main__':
     # 这里可以放一张你准备好的飞机照片路径进行单模块测试
-    test_image_path = "./images/test2.jpg" 
+    test_image_path = "./images/IMG_6400-已增强-降噪.jpg" 
     
     # 实例化引擎
     engine = LocalOCREngine()
