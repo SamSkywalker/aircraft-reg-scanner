@@ -229,3 +229,6 @@ images/*
 
 # 排除临时文件
 reserved*
+
+yolov8n.pt
+runs/*
