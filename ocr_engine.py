@@ -20,18 +20,28 @@ class LocalOCREngine:
         self.reader = easyocr.Reader(['en'], gpu=use_gpu)
         print("本地 OCR 引擎初始化完毕。")
 
-    def detect_and_recognize(self, image_path):
+    def detect_and_recognize(self, image_input):
         """
-        全图扫描照片中的所有文本区域
+        智能全图扫描：既支持传入图片路径字符串，也支持直接传入 YOLO 裁剪好的 NumPy 图像矩阵
         """
-        print(f"正在对图像进行全图扫描: {image_path}")
+        # 判断传入的是路径还是直接就是图像矩阵
+        is_path = isinstance(image_input, str)
+        log_msg = image_input if is_path else f"[NumPy Matrix {image_input.shape}]"
+        print(f"正在对图像进行全图扫描: {log_msg}")
+        
         try:
-            # readtext 会返回一个列表，每个元素格式为: ([坐标], "文本", 置信度)
-            files_bt = np.fromfile(image_path, np.uint8)
-            img_mat = cv2.imdecode(files_bt, cv2.IMREAD_COLOR)
+            if is_path:
+                # 1. 方案：如果传进来的是路径字符串，采用兼容中文的安全读法
+                files_bt = np.fromfile(image_input, np.uint8)
+                img_mat = cv2.imdecode(files_bt, cv2.IMREAD_COLOR)
+            else:
+                # 2. 方案：如果传进来本身已经是 YOLO 裁剪出来的矩阵，直接拿来赋值，省去重复读取
+                img_mat = image_input
+
             if img_mat is None:
-                raise ValueError("无法读取图像文件")
+                raise ValueError("无法读取或加载图像数据")
             
+            # 直接将 OpenCV 矩阵送入 EasyOCR
             raw_results = self.reader.readtext(img_mat)
             return raw_results
         

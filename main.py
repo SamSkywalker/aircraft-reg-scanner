@@ -6,9 +6,12 @@ from ocr_engine import LocalOCREngine
 from text_filter import RegistrationFilter
 import glob
 import re
+from yolo_detector import YoloRegistrationDetector
 
 DB_PATH = './data/aviation_core_2025_08.db'
 FAILED_DIR = './images/failed_cases'
+
+yolo_detector = YoloRegistrationDetector('best-train3.pt')
 
 def generate_variant_regs(raw_text):
     """
@@ -176,13 +179,14 @@ def pipeline(image_path):
         print(f"错误: 找不到输入的测试图片 {image_path}")
         return
 
-    print("==================================================")
-    print("启动带国籍（地区）校对与智能多路径纠错的识别流水线...")
-    print("==================================================")
-
+    # 0. 使用 YOLO 检测并裁剪注册号区域
+    input_img_matrix = yolo_detector.crop_registration_area(image_path)
+    if input_img_matrix is None:
+        handle_failure(image_path, "无法加载图像数据")
+        return
     # 1. OCR 扫描
     ocr_engine = LocalOCREngine()
-    raw_ocr_results = ocr_engine.detect_and_recognize(image_path)
+    raw_ocr_results = ocr_engine.detect_and_recognize(input_img_matrix)
     if not raw_ocr_results:
         handle_failure(image_path, "OCR 未扫描到任何文本")
         return
@@ -208,13 +212,12 @@ def pipeline(image_path):
     # 4. 决策输出层
     if len(hit_aircraft_list) == 1:
         aircraft_info = hit_aircraft_list[0]
-        db_owner = str(aircraft_info["所有人"]).upper()
-        db_operator = str(aircraft_info["运营单位"]).upper()
+        db_owner = str(aircraft_info["所有人"])
+        db_operator = str(aircraft_info["运营单位"])
         
         print("\n================ 识别成功 ================")
         print(f"图片路径: {image_path}")
         print(f"确认注册号: {aircraft_info['注册号']} (原始OCR: {aircraft_info['原始初筛输入']})")
-        # 新增：在此处打印根据前缀字典识别出来的国籍
         print(f"所属国籍（地区）: {aircraft_info['所属国籍（地区）'] if aircraft_info['所属国籍（地区）'] else '未知国籍（地区）'}")
         print(f"制造商: {aircraft_info['制造商']}")
         print(f"详细机型: {aircraft_info['详细机型']}")
@@ -222,8 +225,18 @@ def pipeline(image_path):
         print(f"出厂年份: {aircraft_info['出厂年份'] if aircraft_info['出厂年份'] else '暂无数据'}")
 
         if airline_hint:
-            if (airline_hint in db_owner or db_owner in airline_hint or 
-                airline_hint in db_operator or db_operator in airline_hint):
+            # ================== 新增：统一大小写并抹除空格的归一化层 ==================
+            # 1. 对机身视觉线索进行清洗
+            clean_hint = str(airline_hint).upper().replace(" ", "")
+            
+            # 2. 对数据库所有人和运营单位进行完全相同的清洗
+            clean_owner = db_owner.upper().replace(" ", "")
+            clean_operator = db_operator.upper().replace(" ", "")
+            # =====================================================================
+
+            # 使用清洗后的文本进行双向子串包含匹配
+            if (clean_hint in clean_owner or clean_owner in clean_hint or 
+                clean_hint in clean_operator or clean_operator in clean_hint):
                 print(f"所有人/运营单位: {aircraft_info['所有人']} (已通过机身视觉线索 [{airline_hint}] 验证核对)")
             else:
                 print(f"所有人(数据库): {aircraft_info['所有人']}")
