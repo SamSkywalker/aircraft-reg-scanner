@@ -1,0 +1,38 @@
+[
+  {
+    "desc": "末尾带下划线噪声",
+    "raw_ocr": "RA-86559_",
+    "expected_reg": "RA-86559",
+    "should_pass": true
+  },
+  {
+    "desc": "完全无意义的低置信度乱码",
+    "raw_ocr": "WII-62M",
+    "expected_reg": "",
+    "should_pass": false
+  },
+  {
+    "desc": "航司涂鸦或无关环境文本",
+    "raw_ocr": "bilibili KAIRZ Sunrise",
+    "expected_reg": "",
+    "should_pass": false
+  },
+  {
+    "desc": "前后多读了横杠的中国注册号",
+    "raw_ocr": "-B-2813",
+    "expected_reg": "B-2813",
+    "should_pass": true
+  },
+  {
+    "desc": "包含反斜杠的中国注册号",
+    "raw_ocr": "B-28\\3",
+    "expected_reg": "B-2813",
+    "should_pass": true
+  },
+  {
+    "desc": "中国注册号,识别台湾地区",
+    "raw_ocr": "B-18917",
+    "expected_reg": "B-18917",
+    "should_pass": true
+  }
+]
