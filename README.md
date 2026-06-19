@@ -18,11 +18,13 @@ Now working on:
 
 ## How to use
 
-Warning:  There mighy be bugs so use at your own risks.
+**Warning:  There mighy be bugs so use at your own risks.**
 
 1. Download as zip
 2. Put photos in `images` folder
 3. Run `main.py`
+
+**It is not recommended to test this project at this stage.**
 
 Since it has not been packaged yet, it is recommended to use VS Code or other editor instead of double-clicking the file directly.
 
@@ -30,7 +32,7 @@ Since it has not been packaged yet, it is recommended to use VS Code or other ed
 
 注意：开发初期代码功能不完整，可能有bug，使用者后果自负
 
-一个通过 OCR 和 OpenSky 数据库从图像中识别注册号和机型的本地离线系统
+一个通过 YOLO 支持的 OCR 和 OpenSky 数据库从图像中识别注册号和机型的本地离线系统
 
 使用OpenSky数据库：[OpenSky](https://opensky-network.org/data/aircraft) 和 [Opensky Data Samples](https://opensky-network.org/datasets/#metadata/)
 
@@ -44,9 +46,13 @@ Since it has not been packaged yet, it is recommended to use VS Code or other ed
 
 ## 如何使用
 
+**测试时请自担风险**
+
 1. 打包下载代码
 2. 把需要识别的图片放到 `images` 文件夹中
 3. 运行 `main.py`
+
+**目前属于开发初期阶段,暂不推荐测试该项目**
 
 由于目前尚未封装,推荐使用VS Code或其他编辑器,而非直接双击文件
 
@@ -65,3 +71,5 @@ UPD @ 2026/6/15:Ver 0.2b 现已可以自动选择CPU或GPU运算,提升运算速
 UPD @ 2026/6/15:Ver 0.2c db文件已上传;readme更新了"如何使用"部分
 
 UPD @ 2026/6/18:Ver 0.2d 修复了数个bug(见issues);增加了测试错题集文件,可以将测试中遇到的错误注册号输入以供快速核验
+
+UPD @ 2026/6/18:Ver 0.3 YOLO架构已添加
