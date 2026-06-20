@@ -34,5 +34,11 @@
     "raw_ocr": "B-18917",
     "expected_reg": "B-18917",
     "should_pass": true
+  },
+  {
+    "desc": "3和S混淆",
+    "raw_ocr": "HZ-AR3S",
+    "expected_reg": "HZ-AR33",
+    "should_pass": true
   }
 ]
