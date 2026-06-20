@@ -22,7 +22,7 @@ Now working on:
 
 1. Download as zip
 2. Put photos in `images` folder
-3. Run `main.py`
+3. Run `main.py` or use `streamlit run app_ui.py` to run a test version UI
 
 **It is not recommended to test this project at this stage.**
 
@@ -50,7 +50,7 @@ Since it has not been packaged yet, it is recommended to use VS Code or other ed
 
 1. 打包下载代码
 2. 把需要识别的图片放到 `images` 文件夹中
-3. 运行 `main.py`
+3. 运行 `main.py` 或者使用 `streamlit run app_ui.py` 启用测试版UI
 
 **目前属于开发初期阶段,暂不推荐测试该项目**
 
@@ -73,3 +73,5 @@ UPD @ 2026/6/15:Ver 0.2c db文件已上传;readme更新了"如何使用"部分
 UPD @ 2026/6/18:Ver 0.2d 修复了数个bug(见issues);增加了测试错题集文件,可以将测试中遇到的错误注册号输入以供快速核验
 
 UPD @ 2026/6/18:Ver 0.3 YOLO架构已添加
+
+UPD @ 2026/6/20:Ver 0.4 加入了测试用UI界面;YOLO架构更新,现在泛化能力对于证件照有较好识别率;
