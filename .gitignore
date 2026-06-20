@@ -232,3 +232,5 @@ reserved*
 
 yolov8n.pt
 runs/*
+
+yolo_detector_local.py
