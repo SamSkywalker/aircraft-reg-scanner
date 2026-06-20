@@ -11,7 +11,7 @@ from yolo_detector import YoloRegistrationDetector
 DB_PATH = './data/aviation_core_2025_08.db'
 FAILED_DIR = './images/failed_cases'
 
-yolo_detector = YoloRegistrationDetector(model_path='best-train4.pt', debug_dir='./images/yolo_debug')  # 初始化 YOLO 检测器并指定调试目录
+yolo_detector = YoloRegistrationDetector(model_path='best-train6.pt', debug_dir='./images/yolo_debug')  # 初始化 YOLO 检测器并指定调试目录
 
 def generate_variant_regs(raw_text):
     """
